@@ -46,7 +46,18 @@ class Obj:
     def bounce(self):
         if self.y > self.h_i - self.RADIUS:  # Prüfe, ob das Objekt den Boden berührt
             self.y = self.h_i - self.RADIUS  # Stelle sicher, dass das Objekt nicht durch den Boden fällt
-            self.vel = -self.vel * self.cor  # Geschwindigkeit umkehren und mit CoR multiplizieren
+            self.vel = -self.vel * self.cor  # Geschwindigkeit umkehren und mit CoR multipliziere
+
+def check_collision(obj1, obj2):
+    
+    dx = abs(obj1.x - obj2.x)
+    dy = abs(obj1.y - obj2.y)
+    
+    dist = math.sqrt((dx**2) + (dy**2))
+    
+    if dist <= obj1.RADIUS + obj2.RADIUS:
+        
+        
         
         
 def main():
@@ -73,11 +84,17 @@ def main():
             if event.type == pygame.MOUSEBUTTONUP:
                 mouse_pos = pygame.mouse.get_pos()
                 objs.append(Obj(mouse_pos[0], mouse_pos[1]))
+                
+        for i in range(0, len(objs)):
+            for j in range(i + 1, len(objs)):
+                check_collision(objs[i], objs[j])
                             
         for obj in objs:
             obj.draw_obj(screen)
             obj.fall()
             obj.bounce()
+            
+            
             
         pygame.display.flip()
         
