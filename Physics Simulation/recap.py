@@ -1,5 +1,4 @@
-import pygame
-import pygame_gui
+import pygame #type: ignore
 import math
 
 pygame.init()
@@ -7,7 +6,7 @@ pygame.init()
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 
-WIN_WIDTH, WIN_HEIGHT = 1000, 1000
+WIN_WIDTH, WIN_HEIGHT = 1600, 900
 RES = (WIN_WIDTH, WIN_HEIGHT)
 
 screen = pygame.display.set_mode(RES)
@@ -44,9 +43,10 @@ class Obj:
         self.y += self.vel
         
     def bounce(self):
-        if self.y > self.h_i - self.RADIUS:  # Prüfe, ob das Objekt den Boden berührt
-            self.y = self.h_i - self.RADIUS  # Stelle sicher, dass das Objekt nicht durch den Boden fällt
-            self.vel = -self.vel * self.cor  # Geschwindigkeit umkehren und mit CoR multipliziere
+        if self.y > self.h_i - self.RADIUS:  
+            self.y = self.h_i - self.RADIUS  
+            self.vel = -self.vel * self.cor  
+            
 
 def check_collision(obj1, obj2):
     
@@ -56,6 +56,7 @@ def check_collision(obj1, obj2):
     dist = math.sqrt((dx**2) + (dy**2))
     
     if dist <= obj1.RADIUS + obj2.RADIUS:
+        obj1.vel, obj2.vel = obj2.vel, obj1.vel
         
         
         
