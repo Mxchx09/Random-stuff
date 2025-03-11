@@ -124,7 +124,6 @@ def collision(objs):
 
                 # Impulsberechnung (elastischer Stoß)
                 impulse = (2 * impact_speed) / (obj1.MASS + obj2.MASS)
-
                 obj1.vel_x += impulse * obj2.MASS * nx
                 obj1.vel_y += impulse * obj2.MASS * ny
                 obj2.vel_x -= impulse * obj1.MASS * nx
