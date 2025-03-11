@@ -13,9 +13,9 @@ screen = pg.display.set_mode(RES)
 pg.display.set_caption("Billiard Simulation")
 
 class Obj:
-    MASS = 20
+    MASS = 1000
     RADIUS = 30
-    FRICTION = 0.98  # Reibung
+    FRICTION = 0.98  # Reibung, um den Ball zu verlangsamen
 
     def __init__(self, x=500, y=500):
         self.x = x
@@ -64,6 +64,8 @@ class Obj:
             self.t1 = None
 
     def update(self):
+        
+
         """Bewegt den Ball basierend auf der aktuellen Geschwindigkeit."""
         self.x += self.vel_x
         self.y += self.vel_y
@@ -72,13 +74,13 @@ class Obj:
         self.vel_x *= self.FRICTION
         self.vel_y *= self.FRICTION
 
-        # Stoppt den ball bei zu niedriger Geschwindigkeit
+        # Stoppe den Ball, wenn er fast stillsteht
         if abs(self.vel_x) < 0.1:
             self.vel_x = 0
         if abs(self.vel_y) < 0.1:
             self.vel_y = 0
 
-        # Begrenzung innerhalb des Fensters (einfache Wandkollision)
+        # Begrenzung innerhalb des Fensters
         if self.x - self.RADIUS < 0 or self.x + self.RADIUS > WIN_WIDTH:
             self.vel_x = -self.vel_x  # Rückstoß von der Wand
             self.x = max(self.RADIUS, min(self.x, WIN_WIDTH - self.RADIUS))
@@ -86,6 +88,55 @@ class Obj:
         if self.y - self.RADIUS < 0 or self.y + self.RADIUS > WIN_HEIGHT:
             self.vel_y = -self.vel_y  # Rückstoß von der Wand
             self.y = max(self.RADIUS, min(self.y, WIN_HEIGHT - self.RADIUS))
+
+def check_collision(obj1, obj2):
+    dx = obj1.x - obj2.x
+    dy = obj1.y - obj2.y
+    dist = math.sqrt(dx**2 + dy**2)
+    
+    return (dist <= obj1.RADIUS + obj2.RADIUS, (obj1, obj2))
+    
+def collision(objs):
+    for i in range(len(objs)):
+        for j in range(i + 1, len(objs)):
+            has_collided, (obj1, obj2) = check_collision(objs[i], objs[j])
+            if has_collided:
+                # Richtungsvektor normalisieren
+                dx = obj2.x - obj1.x
+                dy = obj2.y - obj1.y
+                dist = math.sqrt(dx ** 2 + dy ** 2)
+                
+                if dist == 0:  # Falls die Bälle sich genau überlagern (sollte selten passieren)
+                    continue
+                
+                nx = dx / dist
+                ny = dy / dist
+
+                # Relative Geschwindigkeit
+                dvx = obj2.vel_x - obj1.vel_x
+                dvy = obj2.vel_y - obj1.vel_y
+
+                # Skalarprodukt von Relativgeschwindigkeit und Normalenvektor
+                impact_speed = dvx * nx + dvy * ny
+
+                if impact_speed > 0:
+                    continue  # Sie entfernen sich schon voneinander
+
+                # Impulsberechnung (elastischer Stoß)
+                impulse = (2 * impact_speed) / (obj1.MASS + obj2.MASS)
+
+                obj1.vel_x += impulse * obj2.MASS * nx
+                obj1.vel_y += impulse * obj2.MASS * ny
+                obj2.vel_x -= impulse * obj1.MASS * nx
+                obj2.vel_y -= impulse * obj1.MASS * ny
+
+                # Rückversetzen, falls sich Bälle überlappen
+                overlap = obj1.RADIUS + obj2.RADIUS - dist
+                obj1.x -= overlap / 2 * nx
+                obj1.y -= overlap / 2 * ny
+                obj2.x += overlap / 2 * nx
+                obj2.y += overlap / 2 * ny
+
 
 def main():
     running = True
@@ -123,6 +174,8 @@ def main():
             obj.update()  # Bewegung aktualisieren
             obj.draw(screen)  # Ball zeichnen
 
+        collision(objs)
+        
         pg.display.flip()
 
     pg.quit()
